@@ -25,7 +25,10 @@ const user = (sequelize, DataTypes) => {
 			validate: {
 				notEmpty: true,
 			}
-		}
+		},
+		role: {
+      type: DataTypes.STRING,
+    },
 	});
 
 	User.associate = (models) => {
@@ -41,6 +44,8 @@ const user = (sequelize, DataTypes) => {
 			user = await User.findOne({
 				where: { email: login }
 			});
+			console.log("=====>",user, login)
+			return user;
 		}
 
 		User.prototype.validatePassword = async function(password) {
@@ -49,6 +54,15 @@ const user = (sequelize, DataTypes) => {
 
 		return user;
 	};
+
+	User.beforeCreate(async user => {
+    user.password = await user.generatePasswordHash();
+  });
+
+  User.prototype.generatePasswordHash = async function() {
+    const saltRounds = 10;
+    return await bcrypt.hash(this.password, saltRounds);
+  };
 
 	return User;
 };

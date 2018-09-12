@@ -1,17 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { AuthenticationError, UserInputError } from 'apollo-server';
-import bcrypt from 'bcrypt';
+import { combineResolvers } from 'graphql-resolvers';
+
+import { isAdmin } from './authorization';
 
 const createToken = async (user, secret, expiresIn) => {
-  const { id, email, username } = user;
-  return await jwt.sign({ id, email, username }, secret, {
+  const { id, email, username, role } = user;
+  return await jwt.sign({ id, email, username, role }, secret, {
     expiresIn,
   });
-};
-
-const generatePasswordHash = async function(password) {
-	const saltRounds = 5;
-	return await bcrypt.hash(password, saltRounds);
 };
 
 export default {
@@ -38,19 +35,30 @@ export default {
 			const newPassword = await generatePasswordHash(password);
 
 			const user = await models.User.create({
-				username: username,
-				password: newPassword,
-				email: email
+				username,
+				password,
+				email
 			});
 
 			return { token: createToken(user, secret, '30m') };
 		},
+
+		deleteUser: combineResolvers(
+      isAdmin,
+      async (parent, { id }, { models }) => {
+        return await models.User.destroy({
+          where: { id },
+        });
+      },
+    ),
+
 		signIn: async (
 			parent,
 			{ login, password },
 			{ models, secret }
 		) => {
-			const user = await models.User.findById(login);
+			const user = await models.User.findByLogin(login);
+			
 			if(!user) {
 				throw new UserInputError(
 					'No User found with login credential'

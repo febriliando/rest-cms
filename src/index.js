@@ -63,6 +63,7 @@ const createUsersWithMessages = async () => {
 			username: 'Febriliando',
 			email: 'me@febriliando.com',
 			password: 'encrypt',
+			role: 'ADMIN',
 			messages: [
 				{
 					text: 'Published'
@@ -76,7 +77,7 @@ const createUsersWithMessages = async () => {
 
 	await models.User.create(
 		{
-			username: 'Putra ',
+			username: 'Putra',
 			email: 'you@febriliando.com',
 			password: 'decrypt',
 			messages: [
