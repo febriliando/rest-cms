@@ -32,7 +32,6 @@ export default {
 			{ username, email, password },
 			{ models, secret }
 		) => {
-			const newPassword = await generatePasswordHash(password);
 
 			const user = await models.User.create({
 				username,
