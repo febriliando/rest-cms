@@ -3,6 +3,7 @@ import express from 'express';
 import { ApolloServer, AuthenticationError } from 'apollo-server-express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
+import http from 'http';
 
 const app = express();
 app.use(cors());
@@ -34,17 +35,27 @@ const server = new ApolloServer({
 			message
 		};
 	},
-	context: async ({ req }) => {
-		const me = await getMe(req);
-		return {
-			models,
-			me,
-			secret: process.env.SECRET
-		};
+	context: async ({ req, connection }) => {
+		if(connection) {
+			return {
+				models
+			}
+		}
+		if(req) {
+			const me = await getMe(req);
+			return {
+				models,
+				me,
+				secret: process.env.SECRET
+			};
+		}
 	}
 });
 
 server.applyMiddleware({ app, path: '/graphql' });
+
+const httpSrever = http.createServer(app);
+server.installSubscriptionHandlers(httpSrever)
 
 const eraseDatabaseOnSync = true;
 
@@ -52,7 +63,7 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
 	if (eraseDatabaseOnSync) {
 		createUsersWithMessages(new Date());
 	}
-	app.listen({ port: 8080 }, () => {
+	httpSrever.listen({ port: 8080 }, () => {
 		console.log('🚀  Server ready at port 8080');
 	});
 });

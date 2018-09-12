@@ -1,4 +1,5 @@
 import { gql } from 'apollo-server-express';
+import pubsub, { EVENTS } from '../subscription';
 
 export default gql`
   extend type Query {
@@ -26,5 +27,12 @@ export default gql`
     text: String!
     user: User!
     createdAt: String!
+  }
+
+  extend type Subscription {
+    messageCreated: MessageCreated!
+  }
+  type MessageCreated {
+    message: Message!
   }
 `;
