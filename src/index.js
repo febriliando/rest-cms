@@ -50,14 +50,14 @@ const eraseDatabaseOnSync = true;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
 	if (eraseDatabaseOnSync) {
-		createUsersWithMessages();
+		createUsersWithMessages(new Date());
 	}
 	app.listen({ port: 8080 }, () => {
 		console.log('🚀  Server ready at port 8080');
 	});
 });
 
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async date => {
 	await models.User.create(
 		{
 			username: 'Febriliando',
@@ -66,7 +66,8 @@ const createUsersWithMessages = async () => {
 			role: 'ADMIN',
 			messages: [
 				{
-					text: 'Published'
+					text: 'Published',
+					createdAt: date.setSeconds(date.getSeconds() + 1),
 				}
 			]
 		},
@@ -82,10 +83,12 @@ const createUsersWithMessages = async () => {
 			password: 'decrypt',
 			messages: [
 				{
-					text: 'Happy to release ...'
+					text: 'Happy to release ...',
+					createdAt: date.setSeconds(date.getSeconds() + 1),
 				},
 				{
-					text: 'Published a complete ...'
+					text: 'Published a complete ...',
+					createdAt: date.setSeconds(date.getSeconds() + 1),
 				}
 			]
 		},
